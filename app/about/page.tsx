@@ -1,3 +1,7 @@
+import SkillBadge from "@/components/SkillBadge";
+
+const skills = ["Next.js", "React", "TypeScript", "Tailwind CSS"];
+
 export default function About() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
@@ -7,7 +11,7 @@ export default function About() {
         </h1>
 
         <p className="text-lg leading-8 text-gray-700">
-          I'm a full-stack web development student learning how to build
+          I&apos;m a full-stack web development student learning how to build
           modern web applications with technologies like React, Next.js,
           TypeScript, and Tailwind CSS.
         </p>
@@ -16,6 +20,18 @@ export default function About() {
           This portfolio is part of my WDD 430 coursework and will continue
           to grow as I learn more about full-stack development.
         </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-2xl font-bold text-gray-900">
+          Technologies I&apos;m Learning
+        </h2>
+
+        <div className="flex flex-wrap gap-2">
+          {skills.map((skill) => (
+            <SkillBadge key={skill} skill={skill} />
+          ))}
+        </div>
       </section>
     </main>
   );
