@@ -1,4 +1,4 @@
-import { sql } from "@Vercel/postgres";
+import { sql } from "@vercel/postgres";
 
 export interface Project {
   id: number;
