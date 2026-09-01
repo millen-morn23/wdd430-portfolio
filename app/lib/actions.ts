@@ -5,12 +5,42 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+const currentYear = new Date().getFullYear();
+
+const CreateProjectSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters."),
+  technologies: z.string().min(2, "Add at least one technology."),
+  type: z.enum(["opensource", "school"]),
+  yearCompleted: z.coerce
+    .number()
+    .int("Year must be a whole number.")
+    .gte(2000, "Year must be 2000 or later.")
+    .lte(
+      currentYear,
+      `Year cannot be greater than ${currentYear}.`,
+    ),
+});
+
 const ProjectFormSchema = z.object({
   title: z.string().min(2),
   description: z.string().min(10),
   technologies: z.string().min(2),
   type: z.enum(["opensource", "school"]),
 });
+
+export type State = {
+  errors?: {
+    title?: string[];
+    description?: string[];
+    technologies?: string[];
+    yearCompleted?: string[];
+    type?: string[];
+  };
+  message?: string | null;
+};
 
 function parseTechnologies(technologies: string): string {
   const technologyArray = technologies
@@ -25,18 +55,23 @@ function parseTechnologies(technologies: string): string {
     .join(",")}}`;
 }
 
-export async function createProject(formData: FormData) {
-  const raw = {
+export async function createProject(
+  prevState: State,
+  formData: FormData,
+): Promise<State> {
+  const validatedFields = CreateProjectSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
     technologies: formData.get("technologies"),
     type: formData.get("type"),
-  };
+    yearCompleted: formData.get("yearCompleted"),
+  });
 
-  const parsed = ProjectFormSchema.safeParse(raw);
-
-  if (!parsed.success) {
-    throw new Error("Invalid project input.");
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing or invalid fields. Failed to create project.",
+    };
   }
 
   const {
@@ -44,25 +79,34 @@ export async function createProject(formData: FormData) {
     description,
     technologies,
     type,
-  } = parsed.data;
+    yearCompleted,
+  } = validatedFields.data;
 
   const postgresArray = parseTechnologies(technologies);
 
   try {
     await sql`
-      INSERT INTO projects (title, description, type, technologies)
+      INSERT INTO projects (
+        title,
+        description,
+        type,
+        technologies,
+        year_completed
+      )
       VALUES (
         ${title},
         ${description},
         ${type},
-        ${postgresArray}::text[]
+        ${postgresArray}::text[],
+        ${yearCompleted}
       )
     `;
   } catch (error) {
     console.error("Error creating project:", error);
-    throw new Error(
-      "Failed to create project. Please try again later.",
-    );
+
+    return {
+      message: "Database Error: Failed to create project.",
+    };
   }
 
   revalidatePath("/projects");

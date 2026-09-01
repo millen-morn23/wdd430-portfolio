@@ -7,40 +7,66 @@ export interface Project {
   type: "opensource" | "school";
   technologies: string[];
   link?: string;
+  yearCompleted: number;
+}
+
+interface ProjectRow {
+  id: number;
+  title: string;
+  description: string;
+  type: "opensource" | "school";
+  technologies: string[];
+  link: string | null;
+  year_completed: number;
 }
 
 const ITEMS_PER_PAGE = 6;
+
+function mapProject(row: ProjectRow): Project {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    type: row.type,
+    technologies: row.technologies,
+    link: row.link ?? undefined,
+    yearCompleted: row.year_completed,
+  };
+}
 
 export async function getProjects(
   type?: string | null,
 ): Promise<Project[]> {
   if (type) {
-    const { rows } = await sql<Project>`
-      SELECT * FROM projects
+    const { rows } = await sql<ProjectRow>`
+      SELECT *
+      FROM projects
       WHERE type = ${type}
       ORDER BY id
     `;
 
-    return rows;
+    return rows.map(mapProject);
   }
 
-  const { rows } = await sql<Project>`
-    SELECT * FROM projects
+  const { rows } = await sql<ProjectRow>`
+    SELECT *
+    FROM projects
     ORDER BY id
   `;
 
-  return rows;
+  return rows.map(mapProject);
 }
 
 export async function getProjectById(
   id: number,
 ): Promise<Project | null> {
-  const { rows } = await sql<Project>`
-    SELECT * FROM projects
+  const { rows } = await sql<ProjectRow>`
+    SELECT *
+    FROM projects
     WHERE id = ${id}
   `;
 
-  return rows[0] ?? null;
+  return rows[0] ? mapProject(rows[0]) : null;
 }
 
 export async function fetchFilteredProjects(
@@ -50,7 +76,7 @@ export async function fetchFilteredProjects(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
   const searchTerm = `%${query.trim()}%`;
 
-  const { rows } = await sql<Project>`
+  const { rows } = await sql<ProjectRow>`
     SELECT *
     FROM projects
     WHERE title ILIKE ${searchTerm}
@@ -65,7 +91,7 @@ export async function fetchFilteredProjects(
     OFFSET ${offset}
   `;
 
-  return rows;
+  return rows.map(mapProject);
 }
 
 export async function fetchProjectsPages(
