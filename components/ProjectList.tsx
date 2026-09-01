@@ -1,6 +1,7 @@
 import ProjectCard from "./ProjectCard";
 
 interface Project {
+  id: number;
   title: string;
   description: string;
   technologies: string[];
@@ -18,7 +19,7 @@ export default function ProjectList({ projects }: ProjectListProps) {
       aria-label="Portfolio projects"
     >
       {projects.map((project) => (
-        <ProjectCard key={project.title} {...project} />
+        <ProjectCard key={project.id} {...project} />
       ))}
     </section>
   );
