@@ -1,9 +1,8 @@
-import ProjectList from "@/components/ProjectList";
-import { getProjects } from "@/lib/projects-db";
+import { Suspense } from "react";
+import ProjectCardSkeleton from "@/components/ProjectCardSkeleton";
+import SchoolProjectList from "@/components/SchoolProjectList";
 
-export default async function SchoolProjectsPage() {
-  const projects = await getProjects("school");
-
+export default function SchoolProjectsPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <section className="mb-12 text-center">
@@ -16,7 +15,9 @@ export default async function SchoolProjectsPage() {
         </p>
       </section>
 
-      <ProjectList projects={projects} />
+      <Suspense fallback={<ProjectCardSkeleton />}>
+        <SchoolProjectList />
+      </Suspense>
     </main>
   );
 }
