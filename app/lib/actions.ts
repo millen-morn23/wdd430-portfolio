@@ -48,15 +48,22 @@ export async function createProject(formData: FormData) {
 
   const postgresArray = parseTechnologies(technologies);
 
-  await sql`
-    INSERT INTO projects (title, description, type, technologies)
-    VALUES (
-      ${title},
-      ${description},
-      ${type},
-      ${postgresArray}::text[]
-    )
-  `;
+  try {
+    await sql`
+      INSERT INTO projects (title, description, type, technologies)
+      VALUES (
+        ${title},
+        ${description},
+        ${type},
+        ${postgresArray}::text[]
+      )
+    `;
+  } catch (error) {
+    console.error("Error creating project:", error);
+    throw new Error(
+      "Failed to create project. Please try again later.",
+    );
+  }
 
   revalidatePath("/projects");
   redirect("/projects");
@@ -94,15 +101,22 @@ export async function updateProject(
 
   const postgresArray = parseTechnologies(technologies);
 
-  await sql`
-    UPDATE projects
-    SET
-      title = ${title},
-      description = ${description},
-      type = ${type},
-      technologies = ${postgresArray}::text[]
-    WHERE id = ${projectId}
-  `;
+  try {
+    await sql`
+      UPDATE projects
+      SET
+        title = ${title},
+        description = ${description},
+        type = ${type},
+        technologies = ${postgresArray}::text[]
+      WHERE id = ${projectId}
+    `;
+  } catch (error) {
+    console.error("Error updating project:", error);
+    throw new Error(
+      "Failed to update project. Please try again later.",
+    );
+  }
 
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}/edit`);
@@ -116,10 +130,17 @@ export async function deleteProject(id: string) {
     throw new Error("Invalid project ID.");
   }
 
-  await sql`
-    DELETE FROM projects
-    WHERE id = ${projectId}
-  `;
+  try {
+    await sql`
+      DELETE FROM projects
+      WHERE id = ${projectId}
+    `;
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw new Error(
+      "Failed to delete project. Please try again later.",
+    );
+  }
 
   revalidatePath("/projects");
   redirect("/projects");
