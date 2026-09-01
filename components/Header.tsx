@@ -8,7 +8,7 @@ export default function Header() {
         aria-label="Main navigation"
       >
         <Link href="/" className="text-2xl font-bold text-gray-900">
-          Millen's Portfolio
+          Millen&apos;s Portfolio
         </Link>
 
         <ul className="flex gap-6">

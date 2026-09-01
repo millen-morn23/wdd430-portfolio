@@ -1,23 +1,9 @@
 import ProjectList from "@/components/ProjectList";
+import { getProjects } from "@/lib/projects-db";
 
-const projects = [
-  {
-    title: "KilimoSync",
-    description:
-      "A farm-to-market mobile application designed to help farmers manage their products and connect more easily with buyers.",
-    technologies: ["React Native", "JavaScript", "Mobile Development"],
-    link: "https://github.com/millen-morn23/kilimosync",
-  },
-  {
-    title: "Movie Discover Hub",
-    description:
-      "A web application that allows users to discover and explore movies through a simple and user-friendly interface.",
-    technologies: ["HTML", "CSS", "JavaScript"],
-    link: "https://millen-morn23.github.io/movie-discover-hub/",
-  },
-];
+export default async function Home() {
+  const projects = await getProjects();
 
-export default function Home() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <section className="mb-12 text-center">
