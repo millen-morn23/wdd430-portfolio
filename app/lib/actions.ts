@@ -1,5 +1,7 @@
 "use server";
 
+import { auth, signIn } from "@/auth";
+import { AuthError } from "next-auth";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -42,6 +44,16 @@ export type State = {
   message?: string | null;
 };
 
+async function requireOwnerSession() {
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error("Not authenticated");
+  }
+
+  return session;
+}
+
 function parseTechnologies(technologies: string): string {
   const technologyArray = technologies
     .split(",")
@@ -49,8 +61,11 @@ function parseTechnologies(technologies: string): string {
     .filter(Boolean);
 
   return `{${technologyArray
-    .map((technology) =>
-      `"${technology.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
+    .map(
+      (technology) =>
+        `"${technology
+          .replace(/\\/g, "\\\\")
+          .replace(/"/g, '\\"')}"`,
     )
     .join(",")}}`;
 }
@@ -59,6 +74,8 @@ export async function createProject(
   prevState: State,
   formData: FormData,
 ): Promise<State> {
+  await requireOwnerSession();
+
   const validatedFields = CreateProjectSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
@@ -110,13 +127,15 @@ export async function createProject(
   }
 
   revalidatePath("/projects");
-  redirect("/projects");
+  redirect("/dashboard/projects");
 }
 
 export async function updateProject(
   id: string,
   formData: FormData,
 ) {
+  await requireOwnerSession();
+
   const raw = {
     title: formData.get("title"),
     description: formData.get("description"),
@@ -157,17 +176,20 @@ export async function updateProject(
     `;
   } catch (error) {
     console.error("Error updating project:", error);
+
     throw new Error(
       "Failed to update project. Please try again later.",
     );
   }
 
   revalidatePath("/projects");
-  revalidatePath(`/projects/${projectId}/edit`);
-  redirect("/projects");
+  revalidatePath(`/dashboard/projects/${projectId}/edit`);
+  redirect("/dashboard/projects");
 }
 
 export async function deleteProject(id: string) {
+  await requireOwnerSession();
+
   const projectId = Number(id);
 
   if (!Number.isInteger(projectId) || projectId <= 0) {
@@ -181,11 +203,36 @@ export async function deleteProject(id: string) {
     `;
   } catch (error) {
     console.error("Error deleting project:", error);
+
     throw new Error(
       "Failed to delete project. Please try again later.",
     );
   }
 
   revalidatePath("/projects");
-  redirect("/projects");
+  redirect("/dashboard/projects");
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+): Promise<string | undefined> {
+  try {
+    await signIn("credentials", {
+      email: formData.get("email"),
+      password: formData.get("password"),
+      redirectTo: "/dashboard",
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return "Invalid email or password.";
+        default:
+          return "Something went wrong.";
+      }
+    }
+
+    throw error;
+  }
 }
