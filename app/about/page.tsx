@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import SkillBadge from "@/components/SkillBadge";
+
+export const metadata: Metadata = {
+  title: "About Me",
+  description:
+    "Learn more about Millen Morn and the web development technologies he is learning.",
+};
 
 const skills = ["Next.js", "React", "TypeScript", "Tailwind CSS"];
 

@@ -15,8 +15,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Millen's Portfolio",
-  description: "A portfolio of my web development projects.",
+  metadataBase: new URL(
+    "https://wdd430-portfolio-git-main-lil-mills-projects.vercel.app",
+  ),
+  title: {
+    default: "Millen Morn | Project Portfolio",
+    template: "%s | Millen Morn Portfolio",
+  },
+  description:
+    "A portfolio of web development projects by Millen Morn, including school and open source projects.",
+  openGraph: {
+    title: "Millen Morn | Project Portfolio",
+    description:
+      "A portfolio of web development projects by Millen Morn, including school and open source projects.",
+    type: "website",
+    url: "https://wdd430-portfolio-git-main-lil-mills-projects.vercel.app",
+    siteName: "Millen Morn Portfolio",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Millen Morn | Project Portfolio",
+    description:
+      "A portfolio of web development projects by Millen Morn, including school and open source projects.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import ProjectCardSkeleton from "@/components/ProjectCardSkeleton";
 import SchoolProjectList from "@/components/SchoolProjectList";
+
+export const metadata: Metadata = {
+  title: "School Projects",
+  description:
+    "Explore Millen Morn's web development projects completed as part of his studies.",
+};
 
 export default function SchoolProjectsPage() {
   return (
